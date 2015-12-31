@@ -86,6 +86,21 @@ var viewconf = {
   }
 };
 
+var joinplan = [
+  {
+    outer_viewname: "product",
+    outer_key: "prdctft",
+    inner_viewname: "feature",
+    innner_key: "ft"
+  },
+  {
+    outer_viewname: "product",
+    outer_key: "ptype",
+    inner_viewname: "producttype",
+    innner_key: "pt"
+  }
+]
+
 /* 問合せが終わったかどうかのフラグ */
 for(var viewname in viewconf) {
   var conf = viewconf[viewname];
@@ -96,9 +111,9 @@ for(var viewname in viewconf) {
 }
 
 function somethingCallback(){
-  if (viewconf.product.flag && viewconf.feature.flag) {
+  if (viewconf[joinplan[0].outer_viewname].flag && viewconf[joinplan[0].inner_viewname].flag) {
     console.log("haitteruyo");
-    var finalresult = hashJOIN(viewconf.product.result, viewconf.feature.result, "prdctft","ft");
+    var finalresult = hashJOIN(viewconf.product.result, viewconf.feature.result, joinplan[0].outer_key, joinplan[0].innner_key);
     fs.writeFile('outputs/output.json', JSON.stringify(finalresult));
   }
 };
