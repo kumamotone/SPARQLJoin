@@ -1,0 +1,15 @@
+DEFINE get:refresh "0" DEFINE get:soft "replace"
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+SELECT ?prdct ?prdctlbl ?value1 ?ptype ?ptct ?pdate ?prdctft ?pd WHERE {
+  ?prdct <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/Product>.
+  ?prdct <http://www.w3.org/2000/01/rdf-schema#label> ?prdctlbl.
+  ?prdct <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productFeature> ?prdctft.
+  ?prdct <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?ptype.
+  ?prdct <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productPropertyNumeric1> ?value1.
+  ?prdct <http://purl.org/dc/elements/1.1/date> ?pdate.
+  ?prdct <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/producer> ?pd.
+  FILTER(?value1 < 200)
+}

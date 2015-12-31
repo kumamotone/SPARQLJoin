@@ -1,0 +1,26 @@
+{
+  "name": "sparqljoin",
+  "version": "1.0.0",
+  "description": "repository for experimentation SPARQL join",
+  "main": "main.js",
+  "dependencies": {
+    "sparql-client": "^0.2.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kumamotone/SPARQLJoin.git"
+  },
+  "keywords": [
+    "sparql",
+    "join"
+  ],
+  "author": "kumamotone",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kumamotone/SPARQLJoin/issues"
+  },
+  "homepage": "https://github.com/kumamotone/SPARQLJoin#readme"
+}
