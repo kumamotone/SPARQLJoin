@@ -58,7 +58,7 @@ function execQuery(name, conf) {
       return s;
     });
     conf.flag = true;
-    somethingCallback();
+    joinCallBack(conf.dokomade);
     fs.writeFile('outputs/tmp_'+name+'.json', JSON.stringify(conf.result));
   });
 }
@@ -74,15 +74,18 @@ const ENDPOINT2 = "http://130.158.76.30:8890/sparql";
 var viewconf = {
   product : {
     endpoint : ENDPOINT2,
-    filename : "./viewqueries/product.sparql"
+    filename : "./viewqueries/product.sparql",
+    dokomade : 0
   },
   feature : {
     endpoint : ENDPOINT1,
-    filename : "./viewqueries/feature.sparql"
+    filename : "./viewqueries/feature.sparql",
+    dokomade : 0
   },
   producttype : {
     endpoint : ENDPOINT1,
-    filename : "./viewqueries/producttype.sparql"
+    filename : "./viewqueries/producttype.sparql",
+    dokomade : 1
   }
 };
 
@@ -91,13 +94,13 @@ var joinplan = [
     outer_viewname: "product",
     outer_key: "prdctft",
     inner_viewname: "feature",
-    innner_key: "ft"
+    inner_key: "ft"
   },
   {
     outer_viewname: "product",
     outer_key: "ptype",
     inner_viewname: "producttype",
-    innner_key: "pt"
+    inner_key: "pt"
   }
 ]
 
@@ -110,10 +113,24 @@ for(var viewname in viewconf) {
   execQuery(viewname, conf);
 }
 
-function somethingCallback(){
-  if (viewconf[joinplan[0].outer_viewname].flag && viewconf[joinplan[0].inner_viewname].flag) {
-    console.log("haitteruyo");
-    var finalresult = hashJOIN(viewconf.product.result, viewconf.feature.result, joinplan[0].outer_key, joinplan[0].innner_key);
-    fs.writeFile('outputs/output.json', JSON.stringify(finalresult));
+
+var result;
+
+function joinCallBack(dokomade){
+  var outer_conf = viewconf[joinplan[dokomade].outer_viewname];
+  var inner_conf = viewconf[joinplan[dokomade].inner_viewname];
+  if (outer_conf.flag && inner_conf.flag) {
+    console.log("dokomade:" + dokomade);
+    if (dokomade === 0) {
+      result = hashJOIN(outer_conf.result, inner_conf.result, joinplan[dokomade].outer_key, joinplan[dokomade].inner_key);
+    } else {
+      result = hashJOIN(result, inner_conf.result, joinplan[dokomade].outer_key, joinplan[dokomade].inner_key);
+    }
+    
+    if (dokomade+1 === joinplan.length) {
+      fs.writeFile('outputs/output.json', JSON.stringify(result));
+    } else if (viewconf[joinplan[dokomade+1].outer_viewname].flag && viewconf[joinplan[dokomade+1].inner_viewname].flag) {
+      joinCallBack(dokomade+1);
+    }
   }
 };
