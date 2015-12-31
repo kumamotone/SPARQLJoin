@@ -44,58 +44,61 @@ function hashJOIN(R,S,X,Y) {
   return result;
 };
 
-/* ライブラリの読み込み */
-var fs = require('fs');                             // ファイル読み込み(FileStream)
-var SparqlClient = require('sparql-client');        // SPARQL 用クライアント
-
-/* 定数定義 */
-const Endpoint1 = "http://130.158.76.22:8890/sparql";
-const Endpoint2 = "http://130.158.76.30:8890/sparql";
-
-const ViewQueryFilenameProduct = "./viewqueries/product.sparql";
-const ViewQueryFilenameFeature= "./viewqueries/feature.sparql";
-
-const PRODUCT = "product";
-const FEATURE = "feature";
-
-/* 問合せが終わったかどうかのフラグ */
-var flags = {};
-flags[PRODUCT] = false;
-flags[FEATURE] = false;
-
-var results = {};
-
-/* SPARQL クライアントの作成 */
-var sparqlClientProduct = new SparqlClient(Endpoint1);
-var sparqlClientFeature = new SparqlClient(Endpoint2);
-
-/* ファイルからビュークエリの読み出し */
-var sparqlQueryProduct = fs.readFileSync(ViewQueryFilenameProduct, 'utf-8');
-var sparqlQueryFeature = fs.readFileSync(ViewQueryFilenameFeature, 'utf-8');
-
-function execQuery(name, client, query, result) {
-  client.query(query).execute(function(error, ret) {
+/*
+ *
+ */
+function execQuery(name, conf) {
+  conf.client.query(conf.query).execute(function(error, ret) {
     var bindings = ret.results.bindings;
-    results[name] = bindings.map(function(binding) {
+    conf.result = bindings.map(function(binding) {
       var s = {};
       for (var k in binding) {
         s[k] = binding[k].value;
       }
       return s;
     });
-    flags[name] = true;
+    conf.flag = true;
     somethingCallback();
-    fs.writeFile('outputs/tmp_'+name+'.json', JSON.stringify(results[name]));
+    fs.writeFile('outputs/tmp_'+name+'.json', JSON.stringify(conf.result));
   });
 }
 
-execQuery(PRODUCT, sparqlClientProduct, sparqlQueryProduct);
-execQuery(FEATURE, sparqlClientFeature, sparqlQueryFeature);
+/* ライブラリの読み込み */
+var fs = require('fs');                             // ファイル読み込み(FileStream)
+var SparqlClient = require('sparql-client');        // SPARQL 用クライアント
+
+/* 定数定義 */
+const ENDPOINT1 = "http://130.158.76.22:8890/sparql";
+const ENDPOINT2 = "http://130.158.76.30:8890/sparql";
+
+var viewconf = {
+  product : {
+    endpoint : ENDPOINT2,
+    filename : "./viewqueries/product.sparql"
+  },
+  feature : {
+    endpoint : ENDPOINT1,
+    filename : "./viewqueries/feature.sparql"
+  },
+  producttype : {
+    endpoint : ENDPOINT1,
+    filename : "./viewqueries/producttype.sparql"
+  }
+};
+
+/* 問合せが終わったかどうかのフラグ */
+for(var viewname in viewconf) {
+  var conf = viewconf[viewname];
+  conf.flag = false;
+  conf.client = new SparqlClient(conf.endpoint);
+  conf.query = fs.readFileSync(conf.filename, 'utf-8');
+  execQuery(viewname, conf);
+}
 
 function somethingCallback(){
-  if (flags[PRODUCT] && flags[FEATURE]) {
+  if (viewconf.product.flag && viewconf.feature.flag) {
     console.log("haitteruyo");
-    result = hashJOIN(results[PRODUCT], results[FEATURE], "prdctft","ft");
-    fs.writeFile('outputs/output.json', JSON.stringify(result));
+    var finalresult = hashJOIN(viewconf.product.result, viewconf.feature.result, "prdctft","ft");
+    fs.writeFile('outputs/output.json', JSON.stringify(finalresult));
   }
 };
