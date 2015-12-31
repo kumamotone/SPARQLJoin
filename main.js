@@ -52,28 +52,54 @@ sparqlClientFeature.query(sparqlQueryFeature).execute(function(error, ret) {
   somethingCallback();
   fs.writeFile('outputs/tmp_feature.json', JSON.stringify(resultFeature));
 });
-  
+
+function hashJOIN(R,S,X,Y) {
+  var result = [];
+  var hashtable = {};
+  if (R.length > S.length) {
+    var tmp;
+    tmp = R;
+    R = S;
+    S = tmp;
+    
+    tmp = X;
+    X = Y;
+    Y = tmp;
+  }
+
+  /* build phase */
+  for (var i = 0; i < R.length; i++) {
+    if(!hashtable[R[i][X]]) {
+      hashtable[R[i][X]] = [R[i]]; 
+    } else {
+      hashtable[R[i][X]].push(R[i]); 
+    }
+  }
+
+  /* probe phase */
+  for (var i = 0; i < S.length; i++) {
+    var joinkey = S[i][Y];
+    if(hashtable[joinkey]) {
+      for (var j = 0; j < hashtable[joinkey].length; j++) {
+        var t = {};
+        for (var x in hashtable[joinkey][j]) {
+          t[x] = hashtable[joinkey][j][x];
+        }
+        for (var x in S[i]) {
+          t[x] = S[i][x];
+        }
+        result.push(t);
+      }
+    }
+  }
+ 
+  return result;
+};
 
 function somethingCallback(){
   if (isEndProduct && isEndFeature) {
-    var result = [];
     console.log("haireturyo");
-    // join 処理
-    for (var i = 0; i < resultProduct.length; i++) {
-      for (var j = 0; j < resultFeature.length; j++) {
-        if(resultProduct[i].prdctft === resultFeature[j].ft) {
-          var t = {};
-          for (var x in resultProduct[i]) {
-            t[x] = resultProduct[i][x];
-          }
-          for (var x in resultFeature[j]) {
-            t[x] = resultFeature[j][x];
-          }
-          delete t.ft;
-          result.push(t);
-        }
-      }
-    }
+    result = hashJOIN(resultProduct, resultFeature, "prdctft","ft");
     fs.writeFile('outputs/output.json', JSON.stringify(result));
   }
 };
