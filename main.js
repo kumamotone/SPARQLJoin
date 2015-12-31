@@ -129,7 +129,7 @@ function joinCallBack(dokomade){
     
     if (dokomade+1 === joinplan.length) {
       fs.writeFile('outputs/output.json', JSON.stringify(result));
-    } else if (viewconf[joinplan[dokomade+1].outer_viewname].flag && viewconf[joinplan[dokomade+1].inner_viewname].flag) {
+    } else {
       joinCallBack(dokomade+1);
     }
   }
