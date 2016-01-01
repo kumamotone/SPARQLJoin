@@ -6,7 +6,13 @@ var SparqlClient = require('sparql-client');        // SPARQL 用クライアン
 const ENDPOINT22 = "http://130.158.76.22:8890/sparql";
 const ENDPOINT30 = "http://130.158.76.30:8890/sparql";
 
+/* グローバル変数定義 */
+var result;       // 最終的な結果を格納
+
 var viewinfo = {
+  // ビュー情報．
+  // 実装の都合上，JOIN順序を表す要素 dokomade (0→1→2→…と実行されていく)
+  // をここで定義している
   product : {
     endpoint : ENDPOINT30,
     filename : "./viewqueries/product.sparql",
@@ -25,6 +31,8 @@ var viewinfo = {
 };
 
 var joinplan = [
+  // JOIN プラン定義
+  // joinplan[0]→joinplan[1] ... の順に leftdeepで結合する
   {
     outer_viewname: "product",
     outer_key: "prdctft",
@@ -90,6 +98,7 @@ function hashJOIN(R,S,X,Y) {
 };
 
 /*
+ * info に基づいてクエリの実行，info.result に結果のJSON配列を返す
  * @param {string} name ビューの名前(viewinfo[name])
  * @param {JSON} info クエリに関する情報
  */
@@ -109,22 +118,9 @@ function execQuery(name, info) {
   });
 }
 
-/* ↓メインのロジック↓ */
-
-/* 問合せが終わったかどうかのフラグ */
-for(var viewname in viewinfo) {
-  var info = viewinfo[viewname];
-  info.flag = false;
-  info.client = new SparqlClient(info.endpoint);
-  info.query = fs.readFileSync(info.filename, 'utf-8');
-  execQuery(viewname, info);
-}
-
-
-var result;
-
 /*
- * 
+ * execQuery が結果を返したら呼ばれるコールバック
+ * @param {int} dokomade この番号までをJOINする
  */
 function joinCallBack(dokomade){
   var outer_info = viewinfo[joinplan[dokomade].outer_viewname];
@@ -144,3 +140,13 @@ function joinCallBack(dokomade){
     }
   }
 };
+
+/* ↓メインのロジック↓ */
+
+for(var viewname in viewinfo) {
+  var info = viewinfo[viewname];
+  info.flag = false;
+  info.client = new SparqlClient(info.endpoint);
+  info.query = fs.readFileSync(info.filename, 'utf-8');
+  execQuery(viewname, info);
+}
