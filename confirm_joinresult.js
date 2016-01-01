@@ -1,4 +1,9 @@
 /*
+ * ConfirmJoinResult
+ * main.js での JOIN結果が正しいか確認する
+ */
+
+/*
  * 2つのリレーションをハッシュ結合する
  * @param {Array.JSON} リレーション R
  * @param {Array.JSON} リレーション S
