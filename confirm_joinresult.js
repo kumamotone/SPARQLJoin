@@ -1,3 +1,10 @@
+/*
+ * 2つのリレーションをハッシュ結合する
+ * @param {Array.JSON} リレーション R
+ * @param {Array.JSON} リレーション S
+ * @param {string} X リレーション R の結合キー
+ * @param {string} Y リレーション S の結合キー
+ */
 function hashJOIN(R,S,X,Y) {
   var result = [];
   var hashtable = {};
