@@ -56,11 +56,14 @@ var stats = [
   }
 ];
 
+/**
+ * グローバル変数定義
+ */
 var leastcost = [];
 var bestplan = [];
 var rows = [];
 
-var sel = 1/3;    // 選択条件は 不等号であると仮定し，selectivity は とりあえず1/3とする
+const sel = 0.33;    // 選択条件は 不等号であると仮定し，selectivity は とりあえず1/3とする
 
 /**
  * idを持っている集合を渡すと，
@@ -92,44 +95,48 @@ function FindBestPlanDP(S) {
   for (var i = 0; i < S.length; i++) {
     var diff = _.difference(S,[S[i]]);
     FindBestPlanDP(diff);
-    // FindBestPlanDP([S[v]]); // 末端は必ず求まっているのでいらない
-    const idxdiff = getKeyForSet(diff);
-    const idxsv = getKeyForSet([S[i]]);
+    // FindBestPlanDP([S[i]]);                             // 末端は必ず求まっているのでいらない
+    const idxDiff = getKeyForSet(diff);
+    const idxSi = getKeyForSet([S[i]]);
     const idxS = getKeyForSet(S);
       
-    var JOINCost = rows[idxdiff] || 0 + rows[idxsv];
-    var cost = Math.max(leastcost[idxdiff] || 0, leastcost[idxsv]+ JOINCost);
+    var JOINCost = rows[idxDiff] || 0 + rows[idxSi];
+    var cost = Math.max(leastcost[idxDiff] || 0, leastcost[idxSi]+ JOINCost);
     if (cost < leastcost[idxS] || Infinity) {
       leastcost[idxS] = cost;
-      bestplan[idxS] = (bestplan[idxdiff] || "").concat(" join ", (bestplan[idxsv] || ""));
-      rows[idxS] = rows[idxdiff] * rows[idxsv] / 3; // TODO:V(R,Y),V(S,Y)で割る
+      bestplan[idxS] = (bestplan[idxDiff] || "").concat(" join ", (bestplan[idxSi] || ""));
+      rows[idxS] = rows[idxDiff] * rows[idxSi] / 3;        // TODO:V(R,Y),V(S,Y)で割る
     }
   } 
 };
 
 /**
  * JOIN順序を求める関数
- * for Si in S について
+ * for Si in stats について
  * 配列leastcost[{Si}], bestplan[{Si}],rows[{Si}] を初期化し，
  * FindBestPlanDP(stats) を呼ぶ．
  */
 function FindBestPlan() {
   for (var i=0; i<stats.length; i++) {
-    var v = stats[i];
-    var setv = getKeyForSet([v]);
-    rows[setv] = sel * v.rows;
-    bestplan[setv] = v.viewname;
+    var Si = stats[i];
+    const idxSi = getKeyForSet([Si]);
+    rows[idxSi] = sel * Si.rows;
+    bestplan[idxSi] = Si.viewname;
     
     var rowsize = 0;
-    for (var x in v.columnsize) {
-      rowsize += v.columnsize[x];
+    for (var x in Si.columnsize) {
+      rowsize += Si.columnsize[x];
     }
     
-    leastcost[setv] = v.timems + (rows[setv]*rowsize)/v.bandwidthByteps;
+    leastcost[idxSi] = Si.timems
+                       + (rows[idxSi]*rowsize) / Si.bandwidthByteps;
   }
   
   FindBestPlanDP(stats);
   console.log(bestplan[getKeyForSet(stats)])
 };
 
+/**
+ * メインのロジック
+ */
 FindBestPlan();
