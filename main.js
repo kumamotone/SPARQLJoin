@@ -1,16 +1,31 @@
-/* ライブラリの読み込み */
+/** 
+ * SPARQLJoin メイン
+ * joinplan の順に，
+ * SPARQLエンドポイントが返した JSON を
+ * JOIN していくプログラム
+ */
+
+/**
+ * ライブラリの読み込み
+ */
 var fs = require('fs');                             // ファイル読み込み(FileStream)
 var SparqlClient = require('sparql-client');        // SPARQL 用クライアント
 
-/* 定数定義 */
+/**
+ * 定数定義
+ */
 const ENDPOINT22 = "http://130.158.76.22:8890/sparql";
 const ENDPOINT30 = "http://130.158.76.30:8890/sparql";
 
-/* グローバル変数定義 */
+/**
+ * グローバル変数定義
+ */
 var result;       // 最終的な結果を格納
 
+/**
+ * ビュー情報
+ */
 var viewinfo = {
-  // ビュー情報．
   // 実装の都合上，JOIN順序を表す要素 dokomade (0→1→2→…と実行されていく)
   // をここで定義している
   product : {
@@ -30,8 +45,10 @@ var viewinfo = {
   }
 };
 
+/**
+ * JOINプラン定義
+ */
 var joinplan = [
-  // JOIN プラン定義
   // joinplan[0]→joinplan[1] ... の順に leftdeepで結合する
   {
     outer_viewname: "product",
@@ -47,12 +64,12 @@ var joinplan = [
   }
 ]
 
-/*
+/**
  * 2つのリレーションをハッシュ結合する
- * @param {Array.JSON} リレーション R
- * @param {Array.JSON} リレーション S
- * @param {string} X リレーション R の結合キー
- * @param {string} Y リレーション S の結合キー
+ * @param {Array.JSON} R リレーション
+ * @param {Array.JSON} S リレーション
+ * @param {string} X リレーションR の結合キー
+ * @param {string} Y リレーションS の結合キー
  */
 function hashJOIN(R,S,X,Y) {
   var result = [];
@@ -97,7 +114,7 @@ function hashJOIN(R,S,X,Y) {
   return result;
 };
 
-/*
+/**
  * info に基づいてクエリの実行，info.result に結果のJSON配列を返す
  * @param {string} name ビューの名前(viewinfo[name])
  * @param {JSON} info クエリに関する情報
@@ -118,7 +135,7 @@ function execQuery(name, info) {
   });
 }
 
-/*
+/**
  * execQuery が結果を返したら呼ばれるコールバック
  * @param {int} dokomade この番号までをJOINする
  */
@@ -141,8 +158,9 @@ function joinCallBack(dokomade){
   }
 };
 
-/* ↓メインのロジック↓ */
-
+/**
+ * メインのロジック
+ */
 for(var viewname in viewinfo) {
   var info = viewinfo[viewname];
   info.flag = false;

@@ -1,9 +1,9 @@
-/*
+/**
  * ConfirmJoinResult
  * main.js での JOIN結果が正しいか確認する
  */
 
-/*
+/**
  * 2つのリレーションをハッシュ結合する
  * @param {Array.JSON} リレーション R
  * @param {Array.JSON} リレーション S
@@ -53,7 +53,9 @@ function hashJOIN(R,S,X,Y) {
   return result;
 };
 
-/* ライブラリの読み込み */
+/**
+ * ライブラリの読み込み
+ */
 var fs = require('fs');                             // ファイル読み込み(FileStream)
 
 var p = fs.readFileSync("outputs/tmp_product.json", 'utf-8');

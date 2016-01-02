@@ -1,9 +1,16 @@
-/*
+/**
  * CostEstmator
  * JOIN順序を返す
  */
+
+/**
+ * ライブラリの読み込み
+ */
 var _ = require('lodash');
 
+/**
+ * 統計情報の集合
+ */
 var stats = [
   {
     id: "p",
@@ -32,7 +39,7 @@ var stats = [
     },
     timems: 275,
     rows: 10519,
-    bandwidthByteps: 1048576
+    bandwidthByteps: 1
   },
   {
     id: "t",
@@ -53,8 +60,16 @@ var leastcost = [];
 var bestplan = [];
 var rows = [];
 
-var sel = 1/3;
+var sel = 1/3;    // 選択条件は 不等号であると仮定し，selectivity は とりあえず1/3とする
 
+/**
+ * idを持っている集合を渡すと，
+ * 集合に対応する添字を返してくれる
+ * @param {Array.JSON} set statsの集合
+ * 例)
+ * stats.id が [a,c,b] の とき
+ * str "acb" を返す．
+ */
 function getKeyForSet (set) {
   var str = "";
   for (var i=0; i<set.length; i++) {
@@ -63,6 +78,13 @@ function getKeyForSet (set) {
   return str;
 }
 
+/**
+ * 各部分集合の
+ * leastcost[{S}], bestplan[{S}],rows[{S}]
+ * を再帰的に(DPで)解く関数．
+ * 最終的にほしいのは bestplan[{S}]．
+ * @param {Array.JSON} S statsの集合
+ */
 function FindBestPlanDP(S) {
   if (S.length === 1) {
     return;
@@ -85,6 +107,12 @@ function FindBestPlanDP(S) {
   } 
 };
 
+/**
+ * JOIN順序を求める関数
+ * for Si in S について
+ * 配列leastcost[{Si}], bestplan[{Si}],rows[{Si}] を初期化し，
+ * FindBestPlanDP(stats) を呼ぶ．
+ */
 function FindBestPlan() {
   for (var i=0; i<stats.length; i++) {
     var v = stats[i];
