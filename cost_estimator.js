@@ -25,10 +25,17 @@ var stats = [
       prdctft: 74.32864144062002,
       pd: 86.95264417597447
     },
-    timems: 9546,
+    valuecount: 
+    {
+      "f": 4489,
+      "t": 206,
+      "r": 176,
+      "o": 416,
+    },
+    timems: 1234,  ///　←！！！！！BAD
     rows: 17502,  //values <50
     rowsizeCof: 1.68,
-    bandwidthByteps: 10485760
+    bandwidthByteps: 1048576
   },
   {
     id: "f",
@@ -38,10 +45,14 @@ var stats = [
       ft: 74.94419621637037,
       ftlbl: 18.549862154197168 
     },
-    timems: 275,
+    valuecount: 
+    {
+      "p": 10519
+    },
+    timems: 275,  ///　←！！！！！BAD
     rows: 10519,
     rowSizeCof: 1.45,
-    bandwidthByteps: 10485760
+    bandwidthByteps: 1048576
   },
   {
     id: "t",
@@ -52,10 +63,14 @@ var stats = [
       ptlbl: 18.47112462006079,
       ptdate: 16 
     },
-    timems: 60,
+    valuecount: 
+    {
+      "p": 329,
+    },
+    timems: 60,  ///　←！！！！！BAD
     rows: 329,
     rowSizeCof: 2.00,
-    bandwidthByteps: 10485760
+    bandwidthByteps: 1048576
   },
   {
     id: "r",
@@ -65,23 +80,33 @@ var stats = [
       pdlbl: 18.41747572815534,
       pdcountry: 45 
     },
+    valuecount:
+    {
+      "p": 206
+    },
     rows: 206,
     rowSizeCof: 1.405,
-    bandwidthByteps: 10485760
+    bandwidthByteps: 1048576
   },
   {
     id: "o",
     viewname: "offer",
     columnsize:
-    { of: 84.3580398916523,
-    ofdays: 1.0001026019863744,
-    ofdate: 16,
-    ofprdct: 87.50430928342773 }
+    {
+      of: 84.3580398916523,
+      ofdays: 1.0001026019863744,
+      ofdate: 16,
+      ofprdct: 87.50430928342773
+    }
     ,
+    valuecount:
+    {
+      "p": 9505
+    },
     timems: 3723,
     rows: 48732,    // ?ofdays > 4
     rowSizeCof: 1.909,
-    bandwidthByteps: 10485760
+    bandwidthByteps: 1048576
   }
 ];
 
@@ -136,7 +161,20 @@ function FindBestPlanDP(S) {
     if (cost < (leastcost[idxS]||Infinity)) {
       leastcost[idxS] = cost;
       bestplan[idxS] = "("+(bestplan[idxDiff] || "").concat(" join ", (bestplan[idxSi] || ""))+")";
-      var VALUECOUNT = 0;
+      var VALUECOUNT = 0.00000000000000000000001;
+      
+      for(var j=0; j<diff.length; j++) {
+        for(var vc in diff[j].valuecount) {
+          if (vc == S[i].id) {
+            // vc は S[i] の相方です．
+            VALUECOUNT = Math.max(S[i].valuecount[diff[j].id] , diff[j].valuecount[S[i].id]);
+            console.log(idxDiff+ " VS " + S[i].id + ":" + VALUECOUNT);
+          }
+        }
+      }
+      
+      // VALUECOUNT = Math.max(S[i].valuecount[idxDiff], S[idxDiff].valecount[i]);
+      
       /*
       if (idxS == "fp") {
         VALUECOUNT = Math.max(49200,10519);
@@ -145,7 +183,8 @@ function FindBestPlanDP(S) {
       } else if(idxS == "fpt") {
         VALUECOUNT = Math.max(251,329);
       } */
-      rows[idxS] = (rows[idxDiff] * rows[idxSi]) / 10000;        // max(V(R,Y),V(S,Y))で割る
+      rows[idxS] = (rows[idxDiff] * rows[idxSi]) / VALUECOUNT;        // max(V(R,Y),V(S,Y))で割る
+      console.log("rows["+idxDiff+"]:  " +rows[idxDiff]);
     }
   } 
 };

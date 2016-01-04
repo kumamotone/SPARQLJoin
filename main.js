@@ -28,30 +28,30 @@ var result;       // 最終的な結果を格納
 var viewinfo = {
   // 実装の都合上，JOIN順序を表す要素 dokomade (0→1→2→…と実行されていく)
   // をここで定義している
+  producer : {
+    endpoint : ENDPOINT22,
+    filename : "./viewqueries/producer.sparql",
+    dokomade : 0 
+  },
   product : {
     endpoint : ENDPOINT30,
     filename : "./viewqueries/product.sparql",
     dokomade : 0
   },
-  feature : {
-    endpoint : ENDPOINT30,
-    filename : "./viewqueries/feature.sparql",
-    dokomade : 1 
-  },
   producttype : {
     endpoint : ENDPOINT22,
     filename : "./viewqueries/producttype.sparql",
-    dokomade : 2 
+    dokomade : 1 
   },
-  producer : {
-    endpoint : ENDPOINT22,
-    filename : "./viewqueries/producer.sparql",
-    dokomade : 3 
+  feature : {
+    endpoint : ENDPOINT30,
+    filename : "./viewqueries/feature.sparql",
+    dokomade : 2 
   },
   offer: {
     endpoint : ENDPOINT22,
     filename : "./viewqueries/offer.sparql",
-    dokomade : 0 
+    dokomade : 3 
   }
 };
 
@@ -60,11 +60,12 @@ var viewinfo = {
  */
 var joinplan = [
   // joinplan[0]→joinplan[1] ... の順に leftdeepで結合する
+  
   {
-    outer_viewname: "offer",
-    outer_key: "ofprdct",
-    inner_viewname: "product",
-    inner_key: "prdct"
+    outer_viewname: "product",
+    outer_key: "pd",
+    inner_viewname: "producer",
+    inner_key: "pd"
   }
 ,  
   {
@@ -74,18 +75,18 @@ var joinplan = [
     inner_key: "pt"
   }
 ,
- {
+  {
     outer_viewname: "product",
     outer_key: "prdctft",
     inner_viewname: "feature",
     inner_key: "ft"
   }
 ,
- {
-    outer_viewname: "product",
-    outer_key: "pd",
-    inner_viewname: "producer",
-    inner_key: "pd"
+  {
+    outer_viewname: "offer",
+    outer_key: "ofprdct",
+    inner_viewname: "product",
+    inner_key: "prdct"
   }
 ]
 
