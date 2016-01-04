@@ -34,14 +34,24 @@ var viewinfo = {
     dokomade : 0
   },
   feature : {
-    endpoint : ENDPOINT22,
+    endpoint : ENDPOINT30,
     filename : "./viewqueries/feature.sparql",
-    dokomade : 0
+    dokomade : 1 
   },
   producttype : {
     endpoint : ENDPOINT22,
     filename : "./viewqueries/producttype.sparql",
-    dokomade : 1
+    dokomade : 2 
+  },
+  producer : {
+    endpoint : ENDPOINT22,
+    filename : "./viewqueries/producer.sparql",
+    dokomade : 3 
+  },
+  offer: {
+    endpoint : ENDPOINT22,
+    filename : "./viewqueries/offer.sparql",
+    dokomade : 0 
   }
 };
 
@@ -51,16 +61,31 @@ var viewinfo = {
 var joinplan = [
   // joinplan[0]→joinplan[1] ... の順に leftdeepで結合する
   {
-    outer_viewname: "product",
-    outer_key: "prdctft",
-    inner_viewname: "feature",
-    inner_key: "ft"
-  },
+    outer_viewname: "offer",
+    outer_key: "ofprdct",
+    inner_viewname: "product",
+    inner_key: "prdct"
+  }
+,  
   {
     outer_viewname: "product",
     outer_key: "ptype",
     inner_viewname: "producttype",
     inner_key: "pt"
+  }
+,
+ {
+    outer_viewname: "product",
+    outer_key: "prdctft",
+    inner_viewname: "feature",
+    inner_key: "ft"
+  }
+,
+ {
+    outer_viewname: "product",
+    outer_key: "pd",
+    inner_viewname: "producer",
+    inner_key: "pd"
   }
 ]
 
@@ -72,6 +97,7 @@ var joinplan = [
  * @param {string} Y リレーションS の結合キー
  */
 function hashJOIN(R,S,X,Y) {
+  console.time("Join");
   var result = [];
   if (R.length > S.length) {
     var tmp;
@@ -110,6 +136,7 @@ function hashJOIN(R,S,X,Y) {
       }
     }
   }
+  console.timeEnd("Join");
  
   return result;
 };
@@ -121,6 +148,7 @@ function hashJOIN(R,S,X,Y) {
  */
 function execQuery(name, info) {
   info.client.query(info.query).execute(function(error, ret) {
+    fs.writeFile('outputs/tmp_'+name+'_raw.json', JSON.stringify(ret));
     var bindings = ret.results.bindings;
     info.result = bindings.map(function(binding) {
       var s = {};
@@ -130,6 +158,7 @@ function execQuery(name, info) {
       return s;
     });
     info.flag = true;
+    console.timeEnd(name);
     joinCallBack(info.dokomade);
     fs.writeFile('outputs/tmp_'+name+'.json', JSON.stringify(info.result));
   });
@@ -152,12 +181,14 @@ function joinCallBack(dokomade){
     
     if (dokomade+1 === joinplan.length) {
       fs.writeFile('outputs/output.json', JSON.stringify(result));
+      console.timeEnd("hoge");
     } else {
       joinCallBack(dokomade+1);
     }
   }
 };
 
+console.time("hoge");
 /**
  * メインのロジック
  */
@@ -166,5 +197,6 @@ for(var viewname in viewinfo) {
   info.flag = false;
   info.client = new SparqlClient(info.endpoint);
   info.query = fs.readFileSync(info.filename, 'utf-8');
+  console.time(viewname);
   execQuery(viewname, info);
 }

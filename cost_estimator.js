@@ -26,8 +26,9 @@ var stats = [
       pd: 86.95264417597447
     },
     timems: 9546,
-    rows: 424684,
-    bandwidthByteps: 1048576
+    rows: 17502,  //values <50
+    rowsizeCof: 1.68,
+    bandwidthByteps: 10485760
   },
   {
     id: "f",
@@ -39,7 +40,8 @@ var stats = [
     },
     timems: 275,
     rows: 10519,
-    bandwidthByteps: 1
+    rowSizeCof: 1.45,
+    bandwidthByteps: 10485760
   },
   {
     id: "t",
@@ -52,7 +54,34 @@ var stats = [
     },
     timems: 60,
     rows: 329,
-    bandwidthByteps: 1048576
+    rowSizeCof: 2.00,
+    bandwidthByteps: 10485760
+  },
+  {
+    id: "r",
+    viewname: "producer",
+    columnsize:
+    { pd: 86.95145631067962,
+      pdlbl: 18.41747572815534,
+      pdcountry: 45 
+    },
+    rows: 206,
+    rowSizeCof: 1.405,
+    bandwidthByteps: 10485760
+  },
+  {
+    id: "o",
+    viewname: "offer",
+    columnsize:
+    { of: 84.3580398916523,
+    ofdays: 1.0001026019863744,
+    ofdate: 16,
+    ofprdct: 87.50430928342773 }
+    ,
+    timems: 3723,
+    rows: 48732,    // ?ofdays > 4
+    rowSizeCof: 1.909,
+    bandwidthByteps: 10485760
   }
 ];
 
@@ -63,7 +92,7 @@ var leastcost = [];
 var bestplan = [];
 var rows = [];
 
-const sel = 0.33;    // 選択条件は 不等号であると仮定し，selectivity は とりあえず1/3とする
+const sel = 1; // 今回はrowsをそのまま使う 
 
 /**
  * idを持っている集合を渡すと，
@@ -74,11 +103,12 @@ const sel = 0.33;    // 選択条件は 不等号であると仮定し，selecti
  * str "acb" を返す．
  */
 function getKeyForSet (set) {
-  var str = "";
+  var arr = [];
   for (var i=0; i<set.length; i++) {
-    str = str.concat(set[i].id);
+    arr.push(set[i].id);
   }
-  return str;
+  arr.sort();
+  return arr.join("");
 }
 
 /**
@@ -96,16 +126,26 @@ function FindBestPlanDP(S) {
     var diff = _.difference(S,[S[i]]);
     FindBestPlanDP(diff);
     // FindBestPlanDP([S[i]]);                             // 末端は必ず求まっているのでいらない
-    const idxDiff = getKeyForSet(diff);
-    const idxSi = getKeyForSet([S[i]]);
-    const idxS = getKeyForSet(S);
+    var idxDiff = getKeyForSet(diff);
+    var idxSi = getKeyForSet([S[i]]);
+    var idxS = getKeyForSet(S);
       
-    var JOINCost = rows[idxDiff] || 0 + rows[idxSi];
-    var cost = Math.max(leastcost[idxDiff] || 0, leastcost[idxSi]+ JOINCost);
-    if (cost < leastcost[idxS] || Infinity) {
+    var JOINCost = (rows[idxDiff]||0) + rows[idxSi];
+    const alpha = 0.01;
+    var cost = Math.max((leastcost[idxDiff]||0), (leastcost[idxSi]||0)) + alpha*JOINCost;
+    if (cost < (leastcost[idxS]||Infinity)) {
       leastcost[idxS] = cost;
-      bestplan[idxS] = (bestplan[idxDiff] || "").concat(" join ", (bestplan[idxSi] || ""));
-      rows[idxS] = rows[idxDiff] * rows[idxSi] / 3;        // TODO:V(R,Y),V(S,Y)で割る
+      bestplan[idxS] = "("+(bestplan[idxDiff] || "").concat(" join ", (bestplan[idxSi] || ""))+")";
+      var VALUECOUNT = 0;
+      /*
+      if (idxS == "fp") {
+        VALUECOUNT = Math.max(49200,10519);
+      } else if(idxS == "pt") {
+        VALUECOUNT = Math.max(251,329);
+      } else if(idxS == "fpt") {
+        VALUECOUNT = Math.max(251,329);
+      } */
+      rows[idxS] = (rows[idxDiff] * rows[idxSi]) / 10000;        // max(V(R,Y),V(S,Y))で割る
     }
   } 
 };
@@ -119,13 +159,13 @@ function FindBestPlanDP(S) {
 function FindBestPlan() {
   for (var i=0; i<stats.length; i++) {
     var Si = stats[i];
-    const idxSi = getKeyForSet([Si]);
+    var idxSi = getKeyForSet([Si]);
     rows[idxSi] = sel * Si.rows;
     bestplan[idxSi] = Si.viewname;
     
     var rowsize = 0;
     for (var x in Si.columnsize) {
-      rowsize += Si.columnsize[x];
+      rowsize += Si.rowsizeCof * (Si.columnsize[x] + 5);
     }
     
     leastcost[idxSi] = Si.timems

@@ -9,5 +9,5 @@ SELECT ?of ?ofdays ?ofdate ?ofprdct WHERE {
   ?of <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/vendor> ?ofvndr.
   ?of <http://purl.org/dc/elements/1.1/date> ?ofdate.
   ?of <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/deliveryDays> ?ofdays.
-  FILTER(?ofdays > 5)
+  FILTER(?ofdays > 4)
 }
