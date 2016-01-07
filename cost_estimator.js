@@ -148,35 +148,38 @@ function getKeyForSet (set) {
  * @param {Array.JSON} S statsの集合
  */
 function FindBestPlanDP(S) {
-  if (S.length === 1) {
+  if (leastcost[getKeyForSet(S)] !== undefined) {
     return;
   }
+  var idxS = getKeyForSet(S);
+  rows[idxS] = Infinity;
   for (var i = 0; i < S.length; i++) {
     var diff = _.difference(S,[S[i]]);
     FindBestPlanDP(diff);
     // FindBestPlanDP([S[i]]);                             // 末端は必ず求まっているのでいらない
     var idxDiff = getKeyForSet(diff);
     var idxSi = getKeyForSet([S[i]]);
-    var idxS = getKeyForSet(S);
-      
+    
     var JOINCost = (rows[idxDiff]||0) + rows[idxSi];
-    const alpha = 0.01;
+    const alpha = 0.001;
     var cost = Math.max((leastcost[idxDiff]||0), (leastcost[idxSi]||0)) + alpha*JOINCost;
     if (cost < (leastcost[idxS]||Infinity)) {
       leastcost[idxS] = cost;
       bestplan[idxS] = "("+(bestplan[idxDiff] || "").concat(" join ", (bestplan[idxSi] || ""))+")";
-      var VALUECOUNT = 0.00000000000000000000001;
+      var VALUECOUNT = 0;
       
+      // VALUECOUNTを計算する
       for(var j=0; j<diff.length; j++) {
         for(var vc in diff[j].valuecount) {
           if (vc == S[i].id) {
-            // vc は S[i] の相方です．
+            // vc は S[i] の相方
             VALUECOUNT = Math.max(S[i].valuecount[diff[j].id] , diff[j].valuecount[S[i].id]);
-            console.log(idxDiff+ " VS " + S[i].id + ":" + VALUECOUNT);
+            // console.log(idxDiff+ " VS " + S[i].id + ":" + VALUECOUNT);
           }
         }
       }
-      
+
+      console.log("leastcost["+ idxS + "]" + leastcost[idxS]);
       // VALUECOUNT = Math.max(S[i].valuecount[idxDiff], S[idxDiff].valecount[i]);
       if (VALUECOUNT === 0) {
         rows[idxS] = Infinity;
