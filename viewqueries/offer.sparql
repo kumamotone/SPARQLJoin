@@ -1,13 +1,12 @@
-DEFINE get:refresh "0" DEFINE get:soft "replace"
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+DEFINE get:refresh "0" DEFINE get:soft "replace"PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>
 PREFIX dc: <http://purl.org/dc/elements/1.1/>
-SELECT ?of ?ofdays ?ofdate ?ofprdct WHERE {
+SELECT ?of ?ofdays ?ofdate ?ofprdct ?ofvndr WHERE {
   ?of <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/Offer>.
   ?of <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/product> ?ofprdct.
   ?of <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/vendor> ?ofvndr.
   ?of <http://purl.org/dc/elements/1.1/date> ?ofdate.
   ?of <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/deliveryDays> ?ofdays.
-  FILTER(?ofdays > 4)
+  FILTER(?ofdays > 5)
 }

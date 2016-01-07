@@ -6,7 +6,7 @@
 
 /* ライブラリの読み込み */
 var fs = require('fs');                             // ファイル読み込み(FileStream)
-const FILENAME = "outputs/tmp_product.json";        // SPARQL問合せ結果 json ファイル
+const FILENAME = "outputs/tmp_offer.json";        // SPARQL問合せ結果 json ファイル
 
 var contents = fs.readFileSync(FILENAME, 'utf-8');
 var json = JSON.parse(contents);
@@ -17,11 +17,10 @@ var stats = {};
 var cnt = 0;
 var hashtable = {};
 for (var i = 0; i < json.length; i++) {
-    hashtable[json[i].ptype] = 1; 
+    hashtable[json[i].ofprdct] = 1; 
 }
 
 console.log(Object.keys(hashtable).length);
-
 
 for (var i=0; i<rowcount; i++) {
   for (var x in json[i]) {
