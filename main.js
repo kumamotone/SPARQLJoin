@@ -29,7 +29,7 @@ var viewinfo = {
   // 実装の都合上，JOIN順序を表す要素 dokomade (0→1→2→…と実行されていく)
   // をここで定義している
   producer : {
-    endpoint : ENDPOINT22,
+    endpoint : ENDPOINT30,
     filename : "./viewqueries/producer.sparql",
     dokomade : 0 
   },
@@ -39,25 +39,25 @@ var viewinfo = {
     dokomade : 0
   },
   producttype : {
-    endpoint : ENDPOINT22,
+    endpoint : ENDPOINT30,
     filename : "./viewqueries/producttype.sparql",
     dokomade : 1 
   },
   feature : {
-    endpoint : ENDPOINT30,
+    endpoint : ENDPOINT22,
     filename : "./viewqueries/feature.sparql",
     dokomade : 2 
   },
   offer: {
-    endpoint : ENDPOINT22,
+    endpoint : ENDPOINT30,
     filename : "./viewqueries/offer.sparql",
-    dokomade : 3 
+    dokomade : 4 
   },
   review: {
     endpoint : ENDPOINT22,
     filename : "./viewqueries/review.sparql",
-    dokomade : 4 
-  },
+    dokomade : 3 
+  }/*,
   person: {
     endpoint : ENDPOINT22,
     filename : "./viewqueries/person.sparql",
@@ -67,7 +67,7 @@ var viewinfo = {
     endpoint : ENDPOINT22,
     filename : "./viewqueries/vendor.sparql",
     dokomade : 6 
-  }
+  }*/
 };
 
 /**
@@ -100,17 +100,17 @@ var joinplan = [
   {
     outer_viewname: "product",
     outer_key: "prdct",
-    inner_viewname: "offer",
-    inner_key: "ofprdct"
-  }
-,
-  {
-    outer_viewname: "product",
-    outer_key: "prdct",
     inner_viewname: "review",
     inner_key: "rvwfr"
   }
-,
+,  {
+    outer_viewname: "product",
+    outer_key: "prdct",
+    inner_viewname: "offer",
+    inner_key: "ofprdct"
+  }
+
+/*,
   {
     outer_viewname: "review",
     outer_key: "rvwprsn",
@@ -123,7 +123,7 @@ var joinplan = [
     outer_key: "ofvndr",
     inner_viewname: "vendor",
     inner_key: "vndr"
-  }
+  }*/
 ]
 
 /**
@@ -133,50 +133,29 @@ var joinplan = [
  * @param {string} X リレーションR の結合キー
  * @param {string} Y リレーションS の結合キー
  */
-function hashJOIN(R,S,X,Y) {
-  console.time("Join");
-  var result = [];
-  if (R.length > S.length) {
-    var tmp;
-    tmp = R;
-    R = S;
-    S = tmp;
-    
-    tmp = X;
-    X = Y;
-    Y = tmp;
-  }
-
-  /* build フェーズ */
-  var hashtable = {};
-  for (var i = 0; i < R.length; i++) {
-    if(!hashtable[R[i][X]]) {
-      hashtable[R[i][X]] = [R[i]]; 
-    } else {
-      hashtable[R[i][X]].push(R[i]); 
-    }
-  }
-
-  /* probe フェーズ */
-  for (var i = 0; i < S.length; i++) {
-    var joinkey = S[i][Y];
-    if(hashtable[joinkey]) {
-      for (var j = 0; j < hashtable[joinkey].length; j++) {
-        var t = {};
-        for (var x in hashtable[joinkey][j]) {
-          t[x] = hashtable[joinkey][j][x];
+  function NLJ(R,S,X,Y) {
+    // NLJ
+    console.time("Join");
+    var result = [];
+    for(var i=0; i<R.length; i++) {
+      for(var j=0; j<S.length; j++) {
+        if (R[i][X] === S[j][Y]) {
+          var t = {};
+          for (var element in R[i]) {
+            t[element] = R[i][element];
+          }
+          for (var element in S[j]) {
+            t[element] = S[j][element];
+          }
+          result.push(t);
         }
-        for (var x in S[i]) {
-          t[x] = S[i][x];
-        }
-        result.push(t);
       }
     }
+    console.log("R.length: " + R.length +  "\tS.length: " + S.length);
+    console.timeEnd("Join");
+    console.log();
+    return result;
   }
-  console.timeEnd("Join");
- 
-  return result;
-};
 
 /**
  * info に基づいてクエリの実行，info.result に結果のJSON配列を返す
@@ -216,6 +195,7 @@ function joinCallBack(dokomade){
     if (dokomade === 0) {
       result = hashJOIN(outer_info.result, inner_info.result, joinplan[dokomade].outer_key, joinplan[dokomade].inner_key);
     } else {
+
       result = hashJOIN(result, inner_info.result, joinplan[dokomade].outer_key, joinplan[dokomade].inner_key);
     }
     
