@@ -35,9 +35,9 @@ var stats = [
       "r": 176,
       "o": 416,
     },
-    timems: 1234,  ///　←！！！！！BAD
+    timems: 1234,
     rows: 17502,  //values <50
-    rowsizeCof: 1.68,
+    rowSizeCof: 1.68,
     bandwidthByteps: 1048576
   },
   {
@@ -52,7 +52,7 @@ var stats = [
     {
       "p": 10519
     },
-    timems: 275,  ///　←！！！！！BAD
+    timems: 275,
     rows: 10519,
     rowSizeCof: 1.45,
     bandwidthByteps: 1048576
@@ -70,11 +70,11 @@ var stats = [
     {
       "p": 329,
     },
-    timems: 60,  ///　←！！！！！BAD
+    timems: 60, 
     rows: 329,
     rowSizeCof: 2.00,
     bandwidthByteps: 1048576
-  },
+    },
   {
     id: "r",
     viewname: "producer",
@@ -87,6 +87,7 @@ var stats = [
     {
       "p": 206
     },
+    timems: 50,
     rows: 206,
     rowSizeCof: 1.405,
     bandwidthByteps: 1048576
@@ -104,13 +105,13 @@ var stats = [
     ,
     valuecount:
     {
-      "p": 9505
+      "p": 7517
     },
-    timems: 3723,
-    rows: 48732,    // ?ofdays > 4
+    timems: 2441,
+    rows: 16814,    // ?ofdays > 5
     rowSizeCof: 1.909,
     bandwidthByteps: 1048576
-  }
+  },
 ];
 
 /**
