@@ -52,6 +52,21 @@ var viewinfo = {
     endpoint : ENDPOINT22,
     filename : "./viewqueries/offer.sparql",
     dokomade : 3 
+  },
+  review: {
+    endpoint : ENDPOINT22,
+    filename : "./viewqueries/review.sparql",
+    dokomade : 4 
+  },
+  person: {
+    endpoint : ENDPOINT22,
+    filename : "./viewqueries/person.sparql",
+    dokomade : 5 
+  },
+  vendor: {
+    endpoint : ENDPOINT22,
+    filename : "./viewqueries/vendor.sparql",
+    dokomade : 6 
   }
 };
 
@@ -83,10 +98,31 @@ var joinplan = [
   }
 ,
   {
+    outer_viewname: "product",
+    outer_key: "prdct",
+    inner_viewname: "offer",
+    inner_key: "ofprdct"
+  }
+,
+  {
+    outer_viewname: "product",
+    outer_key: "prdct",
+    inner_viewname: "review",
+    inner_key: "rvwfr"
+  }
+,
+  {
+    outer_viewname: "review",
+    outer_key: "rvwprsn",
+    inner_viewname: "person",
+    inner_key: "prsn"
+  }
+,
+  {
     outer_viewname: "offer",
-    outer_key: "ofprdct",
-    inner_viewname: "product",
-    inner_key: "prdct"
+    outer_key: "ofvndr",
+    inner_viewname: "vendor",
+    inner_key: "vndr"
   }
 ]
 
