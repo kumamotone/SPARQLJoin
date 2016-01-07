@@ -8,6 +8,9 @@
  */
 var _ = require('lodash');
 
+/* 実験用変数 */
+var isINCLSPEED = true; 
+
 /**
  * 統計情報の集合
  */
@@ -174,16 +177,11 @@ function FindBestPlanDP(S) {
       }
       
       // VALUECOUNT = Math.max(S[i].valuecount[idxDiff], S[idxDiff].valecount[i]);
-      
-      /*
-      if (idxS == "fp") {
-        VALUECOUNT = Math.max(49200,10519);
-      } else if(idxS == "pt") {
-        VALUECOUNT = Math.max(251,329);
-      } else if(idxS == "fpt") {
-        VALUECOUNT = Math.max(251,329);
-      } */
-      rows[idxS] = (rows[idxDiff] * rows[idxSi]) / VALUECOUNT;        // max(V(R,Y),V(S,Y))で割る
+      if (VALUECOUNT === 0) {
+        rows[idxS] = Infinity;
+      } else {
+        rows[idxS] = (rows[idxDiff] * rows[idxSi]) / VALUECOUNT;        // max(V(R,Y),V(S,Y))で割る
+      }
       console.log("rows["+idxDiff+"]:  " +rows[idxDiff]);
     }
   } 
@@ -204,13 +202,17 @@ function FindBestPlan() {
     
     var rowsize = 0;
     for (var x in Si.columnsize) {
-      rowsize += Si.rowsizeCof * (Si.columnsize[x] + 5);
+      rowsize += Si.rowSizeCof * (Si.columnsize[x] + 5);
     }
     
-    leastcost[idxSi] = Si.timems
-                       + (rows[idxSi]*rowsize) / Si.bandwidthByteps;
+    if (isINCLSPEED) {    
+      leastcost[idxSi] = Si.timems + (rows[idxSi]*rowsize) / Si.bandwidthByteps;
+    } else {
+      leastcost[idxSi] = Si.timems;;
+    }
+    
+    console.log("leastcost["+ idxSi + "]" + leastcost[idxSi]);
   }
-  
   FindBestPlanDP(stats);
   console.log(bestplan[getKeyForSet(stats)])
 };
