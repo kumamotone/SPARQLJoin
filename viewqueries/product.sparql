@@ -11,5 +11,5 @@ SELECT ?prdct ?prdctlbl ?value1 ?ptype ?ptct ?pdate ?prdctft ?pd WHERE {
   ?prdct <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productPropertyNumeric1> ?value1.
   ?prdct <http://purl.org/dc/elements/1.1/date> ?pdate.
   ?prdct <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/producer> ?pd.
-  FILTER(?value1 < 50)
+  FILTER(?value1 < 80)
 }

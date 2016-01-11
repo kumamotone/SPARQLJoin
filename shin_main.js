@@ -46,7 +46,7 @@ var viewinfo = {
   feature : {
     endpoint : ENDPOINT22,
     filename : "./viewqueries/feature.sparql",
-    dokomade : 0 
+    dokomade : 1 
   },
   // offer: {
   //   endpoint : ENDPOINT30,
@@ -56,13 +56,13 @@ var viewinfo = {
   review: {
     endpoint : ENDPOINT30,
     filename : "./viewqueries/review.sparql",
-    dokomade : 1 
+    dokomade : 0 
   }
   ,
   // person: {
   // endpoint : ENDPOINT22,
   // filename : "./viewqueries/person.sparql",
-  // dokomade :3  
+  // dokomade : 1 
   // },
   //   
   // vendor: {
@@ -87,7 +87,7 @@ var create_plan = function(ovn, ok, ivn, ik) {
 var joinplan = [
   // joinplan[0]→joinplan[1] ... の順に leftdeepで結合する
   // create_plan("offer", "ofvndr", "vendor", "vndr"),
-  create_plan("review", "rvwfr","product", "prdct"),
+  create_plan("product", "prdct","review", "rvwfr"),
   create_plan("product", "prdctft", "feature", "ft"),
   // create_plan("offer", "ofprdct","product", "prdct"),
   // create_plan("review", "rvwprsn","person", "prsn"),
@@ -117,7 +117,7 @@ var joinplan = [
    * @param {string} X リレーションR の結合キー
    * @param {string} Y リレーションS の結合キー
    */
-  function hashJOIN(R,S,X,Y,outer_info,inner_info) {
+  function hashJOIN(R,S,X,Y) {
     console.time("Join");
     var result = [];
     if (R.length > S.length) {
@@ -134,16 +134,17 @@ var joinplan = [
     /* build フェーズ */
     var hashtable = {};
     for (var i = 0; i < R.length; i++) {
-      if(!hashtable[R[i][X]]) {
-        hashtable[R[i][X]] = [R[i]]; 
+      var rkey = R[i][X].value || R[i][X];
+      if(!hashtable[rkey]) {
+        hashtable[rkey] = [R[i]]; 
       } else {
-        hashtable[R[i][X]].push(R[i]); 
+        hashtable[rkey].push(R[i]); 
       }
     }
 
     /* probe フェーズ */
     for (var i = 0; i < S.length; i++) {
-      var joinkey = S[i][Y];
+      var joinkey = S[i][Y].value || S[i][Y];
       if(hashtable[joinkey]) {
         for (var j = 0; j < hashtable[joinkey].length; j++) {
           var t = {};
@@ -158,8 +159,6 @@ var joinplan = [
       }
     }
     console.log("R.length: " + R.length +  "\tS.length: " + S.length);
-    console.log("outerinfo"+JSON.stringify(outer_info));
-    console.log("innerinfo"+JSON.stringify(inner_info));
     console.timeEnd("Join");
     console.log(); 
     return result;
@@ -200,6 +199,7 @@ function execQuery(name, info) {
   info.client.query(info.query).execute(function(error, ret) {
     //fs.writeFile('outputs/tmp_'+name+'_raw.json', JSON.stringify(ret));
     var bindings = ret.results.bindings;
+    /*
     var t = 0;
     info.result = bindings.map(function(binding) {
       var s = {};
@@ -209,8 +209,10 @@ function execQuery(name, info) {
       t++;
       return s;
     });
+    */
+    info.result = bindings;
     info.flag = true;
-    console.log(name+":"+t+"tuples");
+    console.log(name+":"+bindings.length+"tuples");
     console.timeEnd(name);
     joinCallBack(info.dokomade);
     //fs.writeFile('outputs/tmp_'+name+'.json', JSON.stringify(info.result));
@@ -224,24 +226,26 @@ function execQuery(name, info) {
 function joinCallBack(dokomade){
   var outer_info = viewinfo[joinplan[dokomade].outer_viewname];
   var inner_info = viewinfo[joinplan[dokomade].inner_viewname];
-  if (outer_info.flag && inner_info.flag) {
+  //if (outer_info.flag && inner_info.flag) {
+  if (outer_info.result && inner_info.result) {
     console.log("dokomade:" + dokomade);
     if (dokomade === 0) {
-      result = hashJOIN(outer_info.result, inner_info.result, joinplan[dokomade].outer_key, joinplan[dokomade].inner_key, joinplan[dokomade].outer_viewname, joinplan[dokomade].inner_viewname);
+      result = hashJOIN(outer_info.result, inner_info.result, joinplan[dokomade].outer_key, joinplan[dokomade].inner_key);
     } else {
-      result = hashJOIN(result, inner_info.result, joinplan[dokomade].outer_key, joinplan[dokomade].inner_key, joinplan[dokomade].outer_viewname, joinplan[dokomade].inner_viewname);
+
+      result = hashJOIN(result, inner_info.result, joinplan[dokomade].outer_key, joinplan[dokomade].inner_key);
     }
 
     if (dokomade+1 === joinplan.length) {
       // fs.writeFile('outputs/output.json', JSON.stringify(result));
-      console.timeEnd("total");
+      console.timeEnd("hoge");
     } else {
       joinCallBack(dokomade+1);
     }
   }
 };
 
-console.time("total");
+console.time("hoge");
 /**
  * メインのロジック
  */

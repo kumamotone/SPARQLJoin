@@ -48,17 +48,17 @@ var viewinfo = {
     filename : "./viewqueries/feature.sparql",
     dokomade : 0 
   },
-  // offer: {
-  //   endpoint : ENDPOINT30,
-  //   filename : "./viewqueries/offer.sparql",
-  //   dokomade : 1 
-  // },
-  review: {
+  offer: {
     endpoint : ENDPOINT30,
-    filename : "./viewqueries/review.sparql",
+    filename : "./viewqueries/offer.sparql",
     dokomade : 1 
-  }
-  ,
+  },
+  // review: {
+  //   endpoint : ENDPOINT22,
+  //   filename : "./viewqueries/review.sparql",
+  //   dokomade : 1 
+  // }
+  // ,
   // person: {
   // endpoint : ENDPOINT22,
   // filename : "./viewqueries/person.sparql",
@@ -87,9 +87,9 @@ var create_plan = function(ovn, ok, ivn, ik) {
 var joinplan = [
   // joinplan[0]→joinplan[1] ... の順に leftdeepで結合する
   // create_plan("offer", "ofvndr", "vendor", "vndr"),
-  create_plan("review", "rvwfr","product", "prdct"),
+  // create_plan("review", "rvwfr","product", "prdct"),
   create_plan("product", "prdctft", "feature", "ft"),
-  // create_plan("offer", "ofprdct","product", "prdct"),
+  create_plan("offer", "ofprdct","product", "prdct"),
   // create_plan("review", "rvwprsn","person", "prsn"),
   // create_plan("product", "pd", "producer", "pd"),
   // create_plan("product", "ptype", "producttype", "pt"),
@@ -117,7 +117,7 @@ var joinplan = [
    * @param {string} X リレーションR の結合キー
    * @param {string} Y リレーションS の結合キー
    */
-  function hashJOIN(R,S,X,Y,outer_info,inner_info) {
+  function hashJOIN(R,S,X,Y) {
     console.time("Join");
     var result = [];
     if (R.length > S.length) {
@@ -158,8 +158,6 @@ var joinplan = [
       }
     }
     console.log("R.length: " + R.length +  "\tS.length: " + S.length);
-    console.log("outerinfo"+JSON.stringify(outer_info));
-    console.log("innerinfo"+JSON.stringify(inner_info));
     console.timeEnd("Join");
     console.log(); 
     return result;
@@ -227,21 +225,22 @@ function joinCallBack(dokomade){
   if (outer_info.flag && inner_info.flag) {
     console.log("dokomade:" + dokomade);
     if (dokomade === 0) {
-      result = hashJOIN(outer_info.result, inner_info.result, joinplan[dokomade].outer_key, joinplan[dokomade].inner_key, joinplan[dokomade].outer_viewname, joinplan[dokomade].inner_viewname);
+      result = hashJOIN(outer_info.result, inner_info.result, joinplan[dokomade].outer_key, joinplan[dokomade].inner_key);
     } else {
-      result = hashJOIN(result, inner_info.result, joinplan[dokomade].outer_key, joinplan[dokomade].inner_key, joinplan[dokomade].outer_viewname, joinplan[dokomade].inner_viewname);
+
+      result = hashJOIN(result, inner_info.result, joinplan[dokomade].outer_key, joinplan[dokomade].inner_key);
     }
 
     if (dokomade+1 === joinplan.length) {
       // fs.writeFile('outputs/output.json', JSON.stringify(result));
-      console.timeEnd("total");
+      console.timeEnd("hoge");
     } else {
       joinCallBack(dokomade+1);
     }
   }
 };
 
-console.time("total");
+console.time("hoge");
 /**
  * メインのロジック
  */
